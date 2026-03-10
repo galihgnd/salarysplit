@@ -8,6 +8,7 @@ import type {
   HousingType,
   CalculationMode,
   CalculatorInput,
+  TaxStatus,
 } from "@/types/calculator";
 
 export default function CalculatorPage() {
@@ -23,6 +24,8 @@ export default function CalculatorPage() {
   const [taxCovered, setTaxCovered] = useState<boolean>(false);
   const [medicalCovered, setMedicalCovered] = useState<boolean>(false);
   const [calculationMode, setCalculationMode] = useState<CalculationMode>("monthly");
+  const [taxStatus, setTaxStatus] = useState<TaxStatus>("TK/0");
+  const [hasBpjsKesehatan, setHasBpjsKesehatan] = useState<boolean>(true);
 
   // Format number with dots for display (Indonesian style)
   function formatDisplay(value: string): string {
@@ -62,6 +65,8 @@ export default function CalculatorPage() {
       taxCovered,
       medicalCovered,
       calculationMode,
+      taxStatus,
+      hasBpjsKesehatan,
     };
 
     // Store input in sessionStorage so results page can read it
@@ -144,7 +149,7 @@ export default function CalculatorPage() {
               {/* Monthly Net Income */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Monthly Net Income (Gaji Bersih Bulanan) *
+                  Monthly Gross Salary (Gaji Kotor Bulanan) *
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-medium">
@@ -159,7 +164,7 @@ export default function CalculatorPage() {
                     className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 </div>
-                <p className="text-xs text-slate-400 mt-1">Your take-home pay after tax deductions</p>
+                <p className="text-xs text-slate-400 mt-1">Your gross monthly salary before deductions</p>
               </div>
 
               {/* Annual Bonus */}
@@ -293,13 +298,63 @@ export default function CalculatorPage() {
               </div>
             </div>
 
-            {/* Benefits Section */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            {/* Tax Status & Deductions Section */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
               <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <span className="text-xl">💼</span> Company Benefits — Tunjangan Kantor
+                <span className="text-xl">🏛️</span> Tax & BPJS — Pajak & BPJS
               </h2>
 
-              {/* Tax Toggle */}
+              {/* Tax Status (PTKP) */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Tax Status / PTKP (Status Pajak)
+                </label>
+                <select
+                  value={taxStatus}
+                  onChange={(e) => setTaxStatus(e.target.value as TaxStatus)}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                >
+                  <option value="TK/0">TK/0 — Single, no dependents</option>
+                  <option value="TK/1">TK/1 — Single, 1 dependent</option>
+                  <option value="TK/2">TK/2 — Single, 2 dependents</option>
+                  <option value="TK/3">TK/3 — Single, 3 dependents</option>
+                  <option value="K/0">K/0 — Married, no dependents</option>
+                  <option value="K/1">K/1 — Married, 1 dependent</option>
+                  <option value="K/2">K/2 — Married, 2 dependents</option>
+                  <option value="K/3">K/3 — Married, 3 dependents</option>
+                </select>
+                <p className="text-xs text-slate-400 mt-1">
+                  Used for PPh 21 TER calculation. Check your tax card (bukti potong).
+                </p>
+              </div>
+
+              {/* BPJS Kesehatan Toggle */}
+              <div
+                onClick={() => setHasBpjsKesehatan(!hasBpjsKesehatan)}
+                className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  hasBpjsKesehatan
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div>
+                  <div className="text-sm font-semibold text-slate-700">
+                    BPJS Kesehatan Active
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    Iuran BPJS Kesehatan (5% total: 4% perusahaan + 1% karyawan)
+                  </div>
+                </div>
+                <div
+                  className={`w-12 h-7 rounded-full flex items-center transition-all ${
+                    hasBpjsKesehatan ? "bg-blue-600 justify-end" : "bg-slate-200 justify-start"
+                  }`}
+                >
+                  <div className="w-5 h-5 bg-white rounded-full shadow-sm mx-1"></div>
+                </div>
+              </div>
+
+              {/* PPh 21 Toggle */}
               <div
                 onClick={() => setTaxCovered(!taxCovered)}
                 className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
@@ -310,10 +365,10 @@ export default function CalculatorPage() {
               >
                 <div>
                   <div className="text-sm font-semibold text-slate-700">
-                    Tax Paid by Company
+                    PPh 21 Paid by Company
                   </div>
                   <div className="text-xs text-slate-400">
-                    Pajak dibayar perusahaan
+                    Pajak penghasilan ditanggung perusahaan (gross-up)
                   </div>
                 </div>
                 <div
@@ -325,30 +380,40 @@ export default function CalculatorPage() {
                 </div>
               </div>
 
-              {/* Medical Toggle */}
-              <div
-                onClick={() => setMedicalCovered(!medicalCovered)}
-                className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  medicalCovered
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                <div>
-                  <div className="text-sm font-semibold text-slate-700">
-                    Medical Covered by Company
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    Asuransi kesehatan dari perusahaan
-                  </div>
-                </div>
+              {/* BPJS Employee Share Toggle — only show if BPJS is active */}
+              {hasBpjsKesehatan && (
                 <div
-                  className={`w-12 h-7 rounded-full flex items-center transition-all ${
-                    medicalCovered ? "bg-blue-600 justify-end" : "bg-slate-200 justify-start"
+                  onClick={() => setMedicalCovered(!medicalCovered)}
+                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    medicalCovered
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  <div className="w-5 h-5 bg-white rounded-full shadow-sm mx-1"></div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-700">
+                      BPJS Employee Share Covered by Company
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      Iuran BPJS karyawan (1%) ditanggung perusahaan
+                    </div>
+                  </div>
+                  <div
+                    className={`w-12 h-7 rounded-full flex items-center transition-all ${
+                      medicalCovered ? "bg-blue-600 justify-end" : "bg-slate-200 justify-start"
+                    }`}
+                  >
+                    <div className="w-5 h-5 bg-white rounded-full shadow-sm mx-1"></div>
+                  </div>
                 </div>
+              )}
+
+              {/* Disclaimer */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <p className="text-xs text-amber-700">
+                  ⚠️ This calculator uses TER rates from PP 58/2023 & BPJS rates from Perpres 64/2020. 
+                  It is a planning tool — verify against current regulations before production use.
+                </p>
               </div>
             </div>
 

@@ -460,12 +460,116 @@ export default function ResultsPage() {
               Your Budget Allocation
             </h1>
             <p className="text-slate-500 text-lg">
-              Total {modeLabel} Income:{" "}
-              <span className="font-bold text-slate-800">
-                {formatRupiah(result.totalIncome)}
-              </span>
+              {result.payroll ? (
+                <>
+                  Gross Salary:{" "}
+                  <span className="font-bold text-slate-800">
+                    {formatRupiah(result.grossIncome)}
+                  </span>
+                  {" → "}Take-home:{" "}
+                  <span className="font-bold text-green-600">
+                    {formatRupiah(result.totalIncome)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Total {modeLabel} Income:{" "}
+                  <span className="font-bold text-slate-800">
+                    {formatRupiah(result.totalIncome)}
+                  </span>
+                </>
+              )}
             </p>
           </div>
+
+          {/* Payroll Deduction Card — only show if payroll data exists */}
+          {result.payroll && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-10">
+              <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                🏛️ Payroll Deductions — Potongan Gaji
+              </h3>
+
+              <div className="grid sm:grid-cols-2 gap-6">
+                {/* Left: BPJS */}
+                <div>
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                    BPJS Kesehatan
+                  </div>
+                  {result.input.hasBpjsKesehatan ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Employer share (4%)</span>
+                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.bpjsEmployerShare)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Employee share (1%)</span>
+                        <span className="font-semibold text-slate-700">
+                          {formatRupiah(result.payroll.bpjsEmployeeShare)}
+                          {result.payroll.bpjsEmployeeCoveredByCompany && (
+                            <span className="text-xs text-green-600 ml-1">✓ Company</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400">Not active</p>
+                  )}
+                </div>
+
+                {/* Right: PPh 21 */}
+                <div>
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                    PPh 21 — Income Tax
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">
+                        Method: {result.payroll.pph21Method === "TER" ? "TER" : "Annual"} (Category {result.payroll.terCategory})
+                      </span>
+                      <span className="font-semibold text-slate-700">
+                        {result.payroll.pph21Method === "TER" ? `${(result.payroll.terRate * 100).toFixed(2)}%` : "Pasal 17"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Monthly tax</span>
+                      <span className="font-semibold text-slate-700">
+                        {formatRupiah(result.payroll.pph21Amount)}
+                        {result.payroll.pph21CoveredByCompany && (
+                          <span className="text-xs text-green-600 ml-1">✓ Company</span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary row */}
+              <div className="mt-5 pt-4 border-t border-slate-100 grid sm:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-xs text-slate-400 mb-1">Your Deductions</div>
+                  <div className="text-lg font-bold text-red-500">
+                    -{formatRupiah(result.payroll.totalEmployeeDeductions)}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-slate-400 mb-1">Take-Home Pay</div>
+                  <div className="text-lg font-bold text-green-600">
+                    {formatRupiah(result.payroll.employeeTakeHome)}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-slate-400 mb-1">Total Company Cost</div>
+                  <div className="text-lg font-bold text-slate-700">
+                    {formatRupiah(result.payroll.totalCompanyCost)}
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-amber-600 mt-4 bg-amber-50 rounded-lg p-2">
+                ⚠️ Planning tool — verify against current Indonesian tax & BPJS regulations.
+              </p>
+            </div>
+          )}
 
           {/* Chart + Summary */}
           <div className="grid md:grid-cols-2 gap-8 mb-10">

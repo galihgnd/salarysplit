@@ -2,7 +2,9 @@ import {
   CalculatorInput,
   CalculatorResult,
   AllocationCategory,
+  PayrollDeductionSummary,
 } from "@/types/calculator";
+import { calculatePayroll } from "@/lib/payroll-id";
 
 // Base percentage allocations for each life condition
 const BASE_ALLOCATIONS = {
@@ -64,29 +66,28 @@ export function calculateAllocation(input: CalculatorInput): CalculatorResult {
 
   // Step 2: Adjust for housing
   if (input.housingType === "company_provided" || input.housingType === "with_parents") {
-    // Housing is free — redistribute the 25%
     const housingPct = base.housing;
-    base.housing = input.housingType === "with_parents" ? 5 : 0; // small contribution if with parents
+    base.housing = input.housingType === "with_parents" ? 5 : 0;
     const freed = housingPct - base.housing;
-    base.savings += Math.round(freed * 0.4);       // 40% of freed goes to savings
-    base.investments += Math.round(freed * 0.35);   // 35% to investments
-    base.lifestyle += freed - Math.round(freed * 0.4) - Math.round(freed * 0.35); // rest to lifestyle
+    base.savings += Math.round(freed * 0.4);
+    base.investments += Math.round(freed * 0.35);
+    base.lifestyle += freed - Math.round(freed * 0.4) - Math.round(freed * 0.35);
   }
 
   // Step 3: Adjust for medical coverage
-  if (input.medicalCovered) {
+  // If BPJS is active AND company covers employee share, reduce medical allocation
+  if (input.medicalCovered && input.hasBpjsKesehatan) {
     const medicalPct = base.medical;
     base.medical = 1; // keep 1% for uncovered minor costs
     const freed = medicalPct - 1;
-    base.savings += freed; // freed medical goes to savings
+    base.savings += freed;
   }
 
-  // Step 4: Adjust for dependents (extra pressure on family + food)
+  // Step 4: Adjust for dependents
   if (input.dependents > 0 && input.maritalStatus === "married_with_children") {
     const extraPerDependent = 2;
-    const extraNeeded = Math.min(input.dependents * extraPerDependent, 6); // cap at 6%
+    const extraNeeded = Math.min(input.dependents * extraPerDependent, 6);
     base.family += extraNeeded;
-    // Take from lifestyle and other
     const fromLifestyle = Math.min(base.lifestyle, Math.ceil(extraNeeded / 2));
     const fromOther = extraNeeded - fromLifestyle;
     base.lifestyle -= fromLifestyle;
@@ -97,34 +98,74 @@ export function calculateAllocation(input: CalculatorInput): CalculatorResult {
   const total = Object.values(base).reduce((sum, val) => sum + val, 0);
   if (total !== 100) {
     const diff = 100 - total;
-    base.other += diff; // adjust "other" to make it exactly 100
+    base.other += diff;
   }
 
   // Make sure no category is negative
   Object.keys(base).forEach((key) => {
     const k = key as keyof typeof base;
     if (base[k] < 0) {
-      base.other += base[k]; // absorb negative into other
+      base.other += base[k];
       base[k] = 0;
     }
   });
 
-  // Step 6: Calculate total income based on mode
-  let totalIncome: number;
-
+  // Step 6: Calculate gross income
+  let grossMonthly: number;
   if (input.calculationMode === "annual") {
-    totalIncome =
-      input.monthlyIncome * 12 +
-      input.annualBonus +
-      input.monthlyAllowances * 12;
-  } else {
-    totalIncome =
+    grossMonthly =
       input.monthlyIncome +
       input.monthlyAllowances +
-      Math.round(input.annualBonus / 12); // spread bonus across months
+      Math.round(input.annualBonus / 12);
+  } else {
+    grossMonthly =
+      input.monthlyIncome +
+      input.monthlyAllowances +
+      Math.round(input.annualBonus / 12);
   }
 
-  // Step 7: Build the categories array
+  const grossIncome = input.calculationMode === "annual"
+    ? grossMonthly * 12
+    : grossMonthly;
+
+  // Step 7: Calculate payroll deductions (BPJS + PPh 21)
+  let payroll: PayrollDeductionSummary | undefined;
+  let totalIncome = grossIncome; // start with gross, subtract deductions
+
+  // Always calculate payroll if BPJS is active or tax is not fully company-covered
+  const payrollResult = calculatePayroll({
+    monthlyGrossSalary: grossMonthly,
+    taxStatus: input.taxStatus,
+    hasBpjsKesehatan: input.hasBpjsKesehatan,
+    bpjsEmployeeShareCoveredByCompany: input.medicalCovered,
+    pph21CoveredByCompany: input.taxCovered,
+    isFinalPayrollMonth: false, // use regular TER for budgeting purposes
+  });
+
+  payroll = {
+    grossSalary: payrollResult.grossSalary,
+    bpjsEmployerShare: payrollResult.bpjsEmployerShare,
+    bpjsEmployeeShare: payrollResult.bpjsEmployeeShare,
+    bpjsEmployeeCoveredByCompany: payrollResult.bpjsEmployeeCoveredByCompany,
+    pph21Amount: payrollResult.pph21Monthly,
+    pph21Method: payrollResult.pph21Method,
+    terRate: payrollResult.terRate,
+    terCategory: payrollResult.terCategory,
+    pph21CoveredByCompany: payrollResult.pph21CoveredByCompany,
+    totalEmployeeDeductions: payrollResult.totalEmployeeDeductions,
+    totalCompanyCost: payrollResult.totalCompanyCost,
+    employeeTakeHome: payrollResult.employeeTakeHome,
+  };
+
+  // The budget allocation is based on employee take-home pay
+  // (what they actually receive after deductions)
+  if (input.calculationMode === "annual") {
+    totalIncome = payrollResult.employeeTakeHome * 12;
+  } else {
+    totalIncome = payrollResult.employeeTakeHome;
+  }
+
+  // Step 8: Build the categories array
   const categories: AllocationCategory[] = Object.entries(base)
     .map(([key, percentage]) => {
       const info = CATEGORY_INFO[key];
@@ -136,14 +177,16 @@ export function calculateAllocation(input: CalculatorInput): CalculatorResult {
         emoji: info.emoji,
       };
     })
-    .filter((cat) => cat.percentage > 0) // hide categories with 0%
-    .sort((a, b) => b.percentage - a.percentage); // sort by largest first
+    .filter((cat) => cat.percentage > 0)
+    .sort((a, b) => b.percentage - a.percentage);
 
   return {
     input,
     totalIncome,
+    grossIncome,
     categories,
     mode: input.calculationMode,
+    payroll,
   };
 }
 
