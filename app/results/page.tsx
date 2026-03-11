@@ -482,88 +482,119 @@ export default function ResultsPage() {
             </p>
           </div>
 
-          {/* Payroll Deduction Card — only show if payroll data exists */}
+          {/* Payroll Deduction Card */}
           {result.payroll && (
             <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-10">
-              <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
                 🏛️ Payroll Deductions — Potongan Gaji
               </h3>
 
-              <div className="grid sm:grid-cols-2 gap-6">
-                {/* Left: BPJS */}
-                <div>
-                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                    BPJS Kesehatan
-                  </div>
-                  {result.input.hasBpjsKesehatan ? (
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Employer share (4%)</span>
-                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.bpjsEmployerShare)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Employee share (1%)</span>
-                        <span className="font-semibold text-slate-700">
-                          {formatRupiah(result.payroll.bpjsEmployeeShare)}
-                          {result.payroll.bpjsEmployeeCoveredByCompany && (
-                            <span className="text-xs text-green-600 ml-1">✓ Company</span>
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-400">Not active</p>
-                  )}
+              {/* SALARY SUMMARY */}
+              <div className="bg-slate-50 rounded-xl p-4 mb-5">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500 font-medium">Gross Salary</span>
+                  <span className="font-bold text-slate-800">{formatRupiah(result.payroll.grossSalary)}</span>
                 </div>
+              </div>
 
-                {/* Right: PPh 21 */}
-                <div>
-                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                    PPh 21 — Income Tax
-                  </div>
-                  <div className="space-y-2">
+              {/* EMPLOYEE DEDUCTIONS */}
+              <div className="mb-5">
+                <div className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">
+                  Employee Deductions — Potongan Karyawan
+                </div>
+                <div className="space-y-2">
+                  {result.input.hasBpjsKesehatan && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">
-                        Method: {result.payroll.pph21Method === "TER" ? "TER" : "Annual"} (Category {result.payroll.terCategory})
-                      </span>
+                      <span className="text-slate-500">BPJS Kesehatan (1%)</span>
                       <span className="font-semibold text-slate-700">
-                        {result.payroll.pph21Method === "TER" ? `${(result.payroll.terRate * 100).toFixed(2)}%` : "Pasal 17"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Monthly tax</span>
-                      <span className="font-semibold text-slate-700">
-                        {formatRupiah(result.payroll.pph21Amount)}
-                        {result.payroll.pph21CoveredByCompany && (
+                        {formatRupiah(result.payroll.bpjsKesehatanEmployee)}
+                        {result.payroll.bpjsKesehatanCoveredByCompany && (
                           <span className="text-xs text-green-600 ml-1">✓ Company</span>
                         )}
                       </span>
                     </div>
+                  )}
+                  {result.input.hasBpjsKetenagakerjaan && (
+                    <>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">JHT — Jaminan Hari Tua (2%)</span>
+                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jhtEmployee)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">JP — Jaminan Pensiun (1%)</span>
+                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jpEmployee)}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">
+                      PPh 21 ({result.payroll.pph21Method === "TER" ? `TER ${(result.payroll.terRate * 100).toFixed(2)}%` : "Pasal 17"}, Cat {result.payroll.terCategory})
+                    </span>
+                    <span className="font-semibold text-slate-700">
+                      {formatRupiah(result.payroll.pph21Amount)}
+                      {result.payroll.pph21CoveredByCompany && (
+                        <span className="text-xs text-green-600 ml-1">✓ Company</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm pt-2 border-t border-slate-100 font-bold">
+                    <span className="text-red-500">Total Deductions</span>
+                    <span className="text-red-500">-{formatRupiah(result.payroll.totalEmployeeDeductions)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Summary row */}
-              <div className="mt-5 pt-4 border-t border-slate-100 grid sm:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="text-xs text-slate-400 mb-1">Your Deductions</div>
-                  <div className="text-lg font-bold text-red-500">
-                    -{formatRupiah(result.payroll.totalEmployeeDeductions)}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xs text-slate-400 mb-1">Take-Home Pay</div>
-                  <div className="text-lg font-bold text-green-600">
-                    {formatRupiah(result.payroll.employeeTakeHome)}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xs text-slate-400 mb-1">Total Company Cost</div>
-                  <div className="text-lg font-bold text-slate-700">
-                    {formatRupiah(result.payroll.totalCompanyCost)}
-                  </div>
+              {/* RESULT: Take-Home Pay */}
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-5">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-green-700">Take-Home Pay — Gaji Bersih</span>
+                  <span className="text-xl font-bold text-green-700">{formatRupiah(result.payroll.employeeTakeHome)}</span>
                 </div>
               </div>
+
+              {/* ADVANCED: Employer Contributions (collapsible) */}
+              <details className="group">
+                <summary className="cursor-pointer text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1 select-none">
+                  <span className="group-open:rotate-90 transition-transform">▶</span>
+                  Advanced — Employer Contributions
+                </summary>
+                <div className="space-y-2 mt-2">
+                  {result.input.hasBpjsKesehatan && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">BPJS Kesehatan employer (4%)</span>
+                      <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.bpjsKesehatanEmployer)}</span>
+                    </div>
+                  )}
+                  {result.input.hasBpjsKetenagakerjaan && (
+                    <>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">JHT employer (3.7%)</span>
+                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jhtEmployer)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">JP employer (2%)</span>
+                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jpEmployer)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">JKK — Kecelakaan Kerja</span>
+                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jkkEmployer)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">JKM — Kematian (0.3%)</span>
+                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jkmEmployer)}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
+                    <span className="font-semibold text-slate-500">Total Employer Contributions</span>
+                    <span className="font-bold text-slate-700">{formatRupiah(result.payroll.totalEmployerContributions)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm pt-2 border-t border-slate-200">
+                    <span className="font-semibold text-slate-700">Total Company Payroll Cost</span>
+                    <span className="font-bold text-slate-800">{formatRupiah(result.payroll.totalCompanyCost)}</span>
+                  </div>
+                </div>
+              </details>
 
               <p className="text-xs text-amber-600 mt-4 bg-amber-50 rounded-lg p-2">
                 ⚠️ Planning tool — verify against current Indonesian tax & BPJS regulations.

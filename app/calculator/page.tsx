@@ -26,6 +26,8 @@ export default function CalculatorPage() {
   const [calculationMode, setCalculationMode] = useState<CalculationMode>("monthly");
   const [taxStatus, setTaxStatus] = useState<TaxStatus>("TK/0");
   const [hasBpjsKesehatan, setHasBpjsKesehatan] = useState<boolean>(true);
+  const [hasBpjsKetenagakerjaan, setHasBpjsKetenagakerjaan] = useState<boolean>(true);
+  const [jkkRiskRate, setJkkRiskRate] = useState<number>(0.0054);
 
   // Format number with dots for display (Indonesian style)
   function formatDisplay(value: string): string {
@@ -67,6 +69,8 @@ export default function CalculatorPage() {
       calculationMode,
       taxStatus,
       hasBpjsKesehatan,
+      hasBpjsKetenagakerjaan,
+      jkkRiskRate,
     };
 
     // Store input in sessionStorage so results page can read it
@@ -392,10 +396,10 @@ export default function CalculatorPage() {
                 >
                   <div>
                     <div className="text-sm font-semibold text-slate-700">
-                      BPJS Employee Share Covered by Company
+                      BPJS Kes Employee Share Covered by Company
                     </div>
                     <div className="text-xs text-slate-400">
-                      Iuran BPJS karyawan (1%) ditanggung perusahaan
+                      Iuran BPJS Kesehatan karyawan (1%) ditanggung perusahaan
                     </div>
                   </div>
                   <div
@@ -405,6 +409,55 @@ export default function CalculatorPage() {
                   >
                     <div className="w-5 h-5 bg-white rounded-full shadow-sm mx-1"></div>
                   </div>
+                </div>
+              )}
+
+              {/* BPJS Ketenagakerjaan Toggle */}
+              <div
+                onClick={() => setHasBpjsKetenagakerjaan(!hasBpjsKetenagakerjaan)}
+                className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  hasBpjsKetenagakerjaan
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div>
+                  <div className="text-sm font-semibold text-slate-700">
+                    BPJS Ketenagakerjaan Active
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    JHT (2% + 3.7%), JP (1% + 2%), JKK & JKM (employer only)
+                  </div>
+                </div>
+                <div
+                  className={`w-12 h-7 rounded-full flex items-center transition-all ${
+                    hasBpjsKetenagakerjaan ? "bg-blue-600 justify-end" : "bg-slate-200 justify-start"
+                  }`}
+                >
+                  <div className="w-5 h-5 bg-white rounded-full shadow-sm mx-1"></div>
+                </div>
+              </div>
+
+              {/* JKK Risk Rate — only show if BPJS Ketenagakerjaan is active */}
+              {hasBpjsKetenagakerjaan && (
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    JKK Risk Group (Kelompok Risiko Kecelakaan Kerja)
+                  </label>
+                  <select
+                    value={jkkRiskRate}
+                    onChange={(e) => setJkkRiskRate(parseFloat(e.target.value))}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  >
+                    <option value={0.0024}>Group I — 0.24% (very low risk)</option>
+                    <option value={0.0054}>Group II — 0.54% (low risk, default)</option>
+                    <option value={0.0089}>Group III — 0.89% (medium risk)</option>
+                    <option value={0.0127}>Group IV — 1.27% (high risk)</option>
+                    <option value={0.0174}>Group V — 1.74% (very high risk)</option>
+                  </select>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Employer-only contribution. Ask your HR for the correct group.
+                  </p>
                 </div>
               )}
 
