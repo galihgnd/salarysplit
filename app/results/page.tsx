@@ -47,12 +47,12 @@ function PieChart({ categories }: { categories: CalculatorResult["categories"] }
         );
       })}
       {/* Center circle for donut effect */}
-      <circle cx="0" cy="0" r="0.55" fill="white" />
+      <circle cx="0" cy="0" r="0.55" fill="#0f172a" />
       <text
         x="0"
         y="-0.05"
         textAnchor="middle"
-        className="text-[0.12px] font-bold fill-slate-800"
+        className="text-[0.12px] font-bold fill-white"
       >
         Total
       </text>
@@ -60,7 +60,7 @@ function PieChart({ categories }: { categories: CalculatorResult["categories"] }
         x="0"
         y="0.12"
         textAnchor="middle"
-        className="text-[0.09px] fill-slate-500"
+        className="text-[0.09px] fill-slate-400"
       >
         100%
       </text>
@@ -413,10 +413,10 @@ export default function ResultsPage() {
 
   if (!result) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500">Calculating your allocation...</p>
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400">Calculating your allocation...</p>
         </div>
       </div>
     );
@@ -426,21 +426,21 @@ export default function ResultsPage() {
   const modeLabelId = result.mode === "monthly" ? "Bulanan" : "Tahunan";
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-950">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">S</span>
             </div>
-            <span className="text-xl font-bold text-slate-800">
-              Salary<span className="text-blue-600">Split</span>
+            <span className="text-xl font-bold text-white">
+              Salary<span className="text-blue-400">Split</span>
             </span>
           </Link>
           <Link
             href="/calculator"
-            className="text-sm text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+            className="text-sm text-blue-400 font-semibold hover:text-blue-300 transition-colors"
           >
             ← Recalculate
           </Link>
@@ -453,47 +453,44 @@ export default function ResultsPage() {
 
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 px-4 py-1.5 rounded-full text-sm font-medium mb-4">
               {modeLabel} — {modeLabelId}
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
               Your Budget Allocation
             </h1>
-            <p className="text-slate-500 text-lg">
-              {result.payroll ? (
+            <p className="text-slate-400 text-lg">
+              Base salary:{" "}
+              <span className="font-bold text-white">{formatRupiah(result.grossIncome)}</span>
+              {" → "}Take-home:{" "}
+              <span className="font-bold text-green-600">{formatRupiah(result.baseTakeHome)}</span>
+              {result.extraIncome > 0 && (
                 <>
-                  Gross Salary:{" "}
-                  <span className="font-bold text-slate-800">
-                    {formatRupiah(result.grossIncome)}
-                  </span>
-                  {" → "}Take-home:{" "}
-                  <span className="font-bold text-green-600">
-                    {formatRupiah(result.totalIncome)}
-                  </span>
-                </>
-              ) : (
-                <>
-                  Total {modeLabel} Income:{" "}
-                  <span className="font-bold text-slate-800">
-                    {formatRupiah(result.totalIncome)}
-                  </span>
+                  {" + "}
+                  <span className="font-bold text-blue-600">{formatRupiah(result.extraIncome)}</span>
+                  <span className="text-sm"> extra</span>
                 </>
               )}
             </p>
+            {result.totalDebt > 0 && (
+              <p className="text-sm text-red-400 mt-1">
+                Debt/Bills: -{formatRupiah(result.totalDebt)} → Available: <span className="font-bold">{formatRupiah(result.availableAfterDebt)}</span>
+              </p>
+            )}
           </div>
 
           {/* Payroll Deduction Card */}
           {result.payroll && (
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-10">
-              <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
+            <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 mb-10">
+              <h3 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
                 🏛️ Payroll Deductions — Potongan Gaji
               </h3>
 
               {/* SALARY SUMMARY */}
-              <div className="bg-slate-50 rounded-xl p-4 mb-5">
+              <div className="bg-slate-800/50 rounded-xl p-4 mb-5">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 font-medium">Gross Salary</span>
-                  <span className="font-bold text-slate-800">{formatRupiah(result.payroll.grossSalary)}</span>
+                  <span className="text-slate-400 font-medium">Gross Salary</span>
+                  <span className="font-bold text-white">{formatRupiah(result.payroll.grossSalary)}</span>
                 </div>
               </div>
 
@@ -537,7 +534,7 @@ export default function ResultsPage() {
                       )}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm pt-2 border-t border-slate-100 font-bold">
+                  <div className="flex justify-between text-sm pt-2 border-t border-slate-800 font-bold">
                     <span className="text-red-500">Total Deductions</span>
                     <span className="text-red-500">-{formatRupiah(result.payroll.totalEmployeeDeductions)}</span>
                   </div>
@@ -545,16 +542,16 @@ export default function ResultsPage() {
               </div>
 
               {/* RESULT: Take-Home Pay */}
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-5">
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-5">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-green-700">Take-Home Pay — Gaji Bersih</span>
-                  <span className="text-xl font-bold text-green-700">{formatRupiah(result.payroll.employeeTakeHome)}</span>
+                  <span className="text-sm font-semibold text-emerald-400">Take-Home Pay — Gaji Bersih</span>
+                  <span className="text-xl font-bold text-emerald-400">{formatRupiah(result.payroll.employeeTakeHome)}</span>
                 </div>
               </div>
 
               {/* ADVANCED: Employer Contributions (collapsible) */}
               <details className="group">
-                <summary className="cursor-pointer text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1 select-none">
+                <summary className="cursor-pointer text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1 select-none">
                   <span className="group-open:rotate-90 transition-transform">▶</span>
                   Advanced — Employer Contributions
                 </summary>
@@ -585,18 +582,18 @@ export default function ResultsPage() {
                       </div>
                     </>
                   )}
-                  <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
-                    <span className="font-semibold text-slate-500">Total Employer Contributions</span>
-                    <span className="font-bold text-slate-700">{formatRupiah(result.payroll.totalEmployerContributions)}</span>
+                  <div className="flex justify-between text-sm pt-2 border-t border-slate-800">
+                    <span className="font-semibold text-slate-400">Total Employer Contributions</span>
+                    <span className="font-bold text-slate-200">{formatRupiah(result.payroll.totalEmployerContributions)}</span>
                   </div>
-                  <div className="flex justify-between text-sm pt-2 border-t border-slate-200">
-                    <span className="font-semibold text-slate-700">Total Company Payroll Cost</span>
-                    <span className="font-bold text-slate-800">{formatRupiah(result.payroll.totalCompanyCost)}</span>
+                  <div className="flex justify-between text-sm pt-2 border-t border-slate-700">
+                    <span className="font-semibold text-slate-300">Total Company Payroll Cost</span>
+                    <span className="font-bold text-white">{formatRupiah(result.payroll.totalCompanyCost)}</span>
                   </div>
                 </div>
               </details>
 
-              <p className="text-xs text-amber-600 mt-4 bg-amber-50 rounded-lg p-2">
+              <p className="text-xs text-amber-400 mt-4 bg-amber-500/10 rounded-lg p-2">
                 ⚠️ Planning tool — verify against current Indonesian tax & BPJS regulations.
               </p>
             </div>
@@ -605,13 +602,13 @@ export default function ResultsPage() {
           {/* Chart + Summary */}
           <div className="grid md:grid-cols-2 gap-8 mb-10">
             {/* Pie Chart */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 flex items-center justify-center">
+            <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 flex items-center justify-center">
               <PieChart categories={adjustedCategories} />
             </div>
 
             {/* Quick Summary */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+            <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
                 Your Profile
               </h3>
               <div className="space-y-3">
@@ -622,25 +619,25 @@ export default function ResultsPage() {
                   { label: "Medical", value: result.input.medicalCovered ? "Company-covered ✓" : "Self-paid" },
                   { label: "Mode", value: modeLabel },
                 ].map((item) => (
-                  <div key={item.label} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
-                    <span className="text-sm text-slate-500">{item.label}</span>
-                    <span className="text-sm font-semibold text-slate-700">{item.value}</span>
+                  <div key={item.label} className="flex justify-between items-center py-2 border-b border-slate-800/30 last:border-0">
+                    <span className="text-sm text-slate-400">{item.label}</span>
+                    <span className="text-sm font-semibold text-slate-300">{item.value}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                <div className="text-xs text-blue-600 font-semibold mb-1">
+              <div className="mt-6 p-4 bg-blue-500/10 rounded-xl">
+                <div className="text-xs text-blue-400 font-semibold mb-1">
                   Savings + Investments + Emergency
                 </div>
-                <div className="text-xl font-extrabold text-blue-700">
+                <div className="text-xl font-extrabold text-blue-400">
                   {formatRupiah(
                     adjustedCategories
                       .filter((c) => ["Savings", "Investments", "Emergency Fund"].includes(c.name))
                       .reduce((sum, c) => sum + c.amount, 0)
                   )}
                 </div>
-                <div className="text-xs text-blue-500 mt-1">
+                <div className="text-xs text-blue-400/70 mt-1">
                   {adjustedCategories
                     .filter((c) => ["Savings", "Investments", "Emergency Fund"].includes(c.name))
                     .reduce((sum, c) => sum + c.percentage, 0)}% of your income goes to building wealth
@@ -650,9 +647,9 @@ export default function ResultsPage() {
           </div>
 
           {/* Detailed Breakdown */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-slate-800">
+              <h3 className="text-lg font-bold text-white">
                 Detailed Breakdown — Rincian Alokasi
               </h3>
               <span className="text-xs text-slate-400">Adjust percentages below</span>
@@ -673,13 +670,13 @@ export default function ResultsPage() {
                     {/* Name + Bar */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold text-slate-700">{cat.name}</span>
-                        <span className="text-sm font-bold text-slate-800">
+                        <span className="text-sm font-semibold text-slate-300">{cat.name}</span>
+                        <span className="text-sm font-bold text-white">
                           {formatRupiah(cat.amount)}
                         </span>
                       </div>
                       {/* Progress Bar */}
-                      <div className="w-full bg-slate-100 rounded-full h-2">
+                      <div className="w-full bg-slate-800 rounded-full h-2">
                         <div
                           className="h-2 rounded-full transition-all duration-300"
                           style={{
@@ -708,8 +705,8 @@ export default function ResultsPage() {
             </div>
 
             {/* Total Check */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-500">Total</span>
+            <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-400">Total</span>
               <span
                 className={`text-sm font-bold ${
                   adjustedCategories.reduce((s, c) => s + c.percentage, 0) === 100
@@ -729,7 +726,7 @@ export default function ResultsPage() {
             <button
               type="button"
               onClick={() => downloadPDF(result, adjustedCategories)}
-              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-4 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/25"
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-4 rounded-xl font-semibold hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/25"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
               Download PDF — Unduh PDF
@@ -737,7 +734,7 @@ export default function ResultsPage() {
             <button
               type="button"
               onClick={() => downloadImage(result, adjustedCategories)}
-              className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-6 py-4 rounded-xl font-semibold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+              className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-6 py-4 rounded-xl font-semibold hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/25"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               Download Image — Unduh Gambar
@@ -748,7 +745,7 @@ export default function ResultsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
             <Link
               href="/calculator"
-              className="text-center bg-white text-blue-600 border-2 border-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all"
+              className="text-center bg-transparent text-blue-400 border-2 border-blue-500 px-6 py-3 rounded-xl font-semibold hover:bg-blue-500/10 transition-all"
             >
               ← Recalculate — Hitung Ulang
             </Link>
@@ -762,24 +759,89 @@ export default function ResultsPage() {
                 navigator.clipboard.writeText(summary);
                 alert("Copied to clipboard! — Tersalin ke clipboard!");
               }}
-              className="text-center bg-white text-slate-600 border-2 border-slate-300 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 hover:border-slate-400 transition-all"
+              className="text-center bg-transparent text-slate-400 border-2 border-slate-700 px-6 py-3 rounded-xl font-semibold hover:bg-slate-800 hover:border-slate-600 transition-all"
             >
               📋 Copy Text — Salin Teks
             </button>
           </div>
 
-          {/* Tip */}
-          <div className="mt-8 bg-blue-50 rounded-2xl p-6 text-center">
-            <p className="text-sm text-blue-700 font-medium mb-1">
-              💡 Tip Keuangan — Financial Tip
-            </p>
-            <p className="text-sm text-blue-600">
-              {result.input.maritalStatus === "single"
-                ? "As a single professional, aim to save at least 20% of your income. Your future self will thank you! Mulailah menabung dan investasi sedini mungkin."
-                : result.input.maritalStatus === "married"
-                ? "As a couple, communicate about finances regularly. Consider setting shared savings goals. Diskusikan keuangan secara terbuka dengan pasangan."
-                : "With children, an emergency fund of 6 months expenses is essential. Prioritize insurance coverage. Pastikan dana darurat cukup untuk 6 bulan pengeluaran."}
-            </p>
+          {/* Financial Analytics — Dark Fintech Style */}
+          <div className="mt-8 bg-slate-900 rounded-2xl p-6 overflow-hidden relative">
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-purple-600/10 pointer-events-none" />
+
+            <div className="relative">
+              {/* Header with health score */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-white font-bold text-lg">Financial Health</h3>
+                  <p className="text-slate-400 text-xs mt-0.5">Analisis Keuangan</p>
+                </div>
+                <div className="text-right">
+                  <div className={`text-2xl font-bold ${
+                    result.analytics.healthScore >= 70 ? "text-emerald-400" :
+                    result.analytics.healthScore >= 40 ? "text-amber-400" : "text-red-400"
+                  }`}>
+                    {result.analytics.healthScore}
+                  </div>
+                  <div className="text-slate-500 text-xs">/ 100</div>
+                </div>
+              </div>
+
+              {/* Health bar */}
+              <div className="w-full bg-slate-800 rounded-full h-2 mb-6">
+                <div
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    result.analytics.healthScore >= 70 ? "bg-emerald-500" :
+                    result.analytics.healthScore >= 40 ? "bg-amber-500" : "bg-red-500"
+                  }`}
+                  style={{ width: `${result.analytics.healthScore}%` }}
+                />
+              </div>
+
+              {/* Insight cards grid */}
+              <div className="grid sm:grid-cols-2 gap-3">
+                {result.analytics.insights.map((insight, idx) => (
+                  <div
+                    key={idx}
+                    className={`rounded-xl p-4 border ${
+                      insight.status === "good" ? "bg-emerald-500/10 border-emerald-500/20" :
+                      insight.status === "warning" ? "bg-amber-500/10 border-amber-500/20" :
+                      insight.status === "danger" ? "bg-red-500/10 border-red-500/20" :
+                      "bg-slate-800/50 border-slate-700/50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{insight.icon}</span>
+                        <span className="text-slate-300 text-xs font-medium uppercase tracking-wider">{insight.title}</span>
+                      </div>
+                      <span className={`text-sm font-bold ${
+                        insight.status === "good" ? "text-emerald-400" :
+                        insight.status === "warning" ? "text-amber-400" :
+                        insight.status === "danger" ? "text-red-400" :
+                        "text-blue-400"
+                      }`}>
+                        {insight.value}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 text-xs leading-relaxed">
+                      {insight.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between">
+                <span className="text-slate-500 text-xs">
+                  {result.budgetRule === "50_30_20" ? "50/30/20" : result.budgetRule === "80_20" ? "80/20" : result.budgetRule === "70_20_10" ? "70/20/10" : "Custom"} Method
+                </span>
+                <span className="text-slate-600 text-xs">
+                  SalarySplit
+                </span>
+              </div>
+            </div>
           </div>
 
         </div>

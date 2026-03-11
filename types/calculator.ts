@@ -7,10 +7,21 @@ export type TaxStatus =
   | "TK/0" | "TK/1" | "TK/2" | "TK/3"
   | "K/0"  | "K/1"  | "K/2"  | "K/3";
 
+// Budgeting framework options
+export type BudgetRule = "50_30_20" | "80_20" | "70_20_10" | "custom";
+
+// Debt input mode
+export type DebtMode = "simple" | "detailed";
+
+export interface DebtItem {
+  label: string;
+  amount: number;
+}
+
 export interface CalculatorInput {
-  monthlyIncome: number;
-  annualBonus: number;
-  monthlyAllowances: number;
+  monthlyIncome: number;       // base gross salary (used for tax/BPJS calculation)
+  annualBonus: number;         // NOT included in tax calculation, added after
+  monthlyAllowances: number;   // NOT included in tax calculation, added after
   maritalStatus: MaritalStatus;
   dependents: number;
   housingType: HousingType;
@@ -21,6 +32,11 @@ export interface CalculatorInput {
   hasBpjsKesehatan: boolean;
   hasBpjsKetenagakerjaan: boolean;
   jkkRiskRate: number;
+  budgetRule: BudgetRule;
+  // Debt
+  debtMode: DebtMode;
+  totalDebt: number;           // simple mode
+  debtItems: DebtItem[];       // detailed mode
 }
 
 export interface AllocationCategory {
@@ -55,9 +71,30 @@ export interface PayrollDeductionSummary {
 
 export interface CalculatorResult {
   input: CalculatorInput;
-  totalIncome: number;
-  grossIncome: number;
+  baseTakeHome: number;        // take-home from base salary after deductions
+  extraIncome: number;         // allowances + bonus (added after deductions)
+  totalIncome: number;         // baseTakeHome + extraIncome (used for budget)
+  grossIncome: number;         // base gross only
   categories: AllocationCategory[];
   mode: CalculationMode;
   payroll?: PayrollDeductionSummary;
+  totalDebt: number;           // monthly debt obligation
+  availableAfterDebt: number;  // totalIncome - totalDebt
+  analytics: AnalyticsData;
+  budgetRule: BudgetRule;
+}
+
+export interface AnalyticsInsight {
+  icon: string;
+  title: string;
+  value: string;
+  description: string;
+  status: "good" | "warning" | "danger" | "info";
+}
+
+export interface AnalyticsData {
+  insights: AnalyticsInsight[];
+  savingsRate: number;
+  debtRatio: number;
+  healthScore: number;
 }
