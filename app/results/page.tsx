@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { calculateAllocation, formatRupiah } from "@/lib/calculator";
 import type { CalculatorInput, CalculatorResult } from "@/types/calculator";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/lib/supabase";
 
 // Simple SVG Pie Chart component
 function PieChart({ categories }: { categories: CalculatorResult["categories"] }) {
@@ -274,17 +276,18 @@ async function downloadImage(result: CalculatorResult, categories: CalculatorRes
 
 export default function ResultsPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [result, setResult] = useState<CalculatorResult | null>(null);
   const [adjustedCategories, setAdjustedCategories] = useState<CalculatorResult["categories"]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    // Read input from sessionStorage
     const stored = sessionStorage.getItem("calculatorInput");
     if (!stored) {
       router.push("/calculator");
       return;
     }
-
     try {
       const input: CalculatorInput = JSON.parse(stored);
       const calcResult = calculateAllocation(input);
@@ -294,6 +297,30 @@ export default function ResultsPage() {
       router.push("/calculator");
     }
   }, [router]);
+
+  async function saveToAccount() {
+    if (!user || !result) return;
+    setSaving(true);
+    const { error } = await supabase.from("projections").insert({
+      user_id: user.id,
+      name: `${result.budgetRule.replace("_", "/")} — ${formatRupiah(result.input.monthlyIncome)}`,
+      monthly_income: result.input.monthlyIncome,
+      total_income: result.totalIncome,
+      take_home_pay: result.baseTakeHome,
+      budget_rule: result.budgetRule,
+      total_debt: result.totalDebt,
+      health_score: result.analytics.healthScore,
+      input_data: JSON.stringify(result.input),
+      result_data: JSON.stringify(result),
+    });
+    setSaving(false);
+    if (!error) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } else {
+      alert("Failed to save. Please try again.");
+    }
+  }
 
   // Handle percentage adjustment
   function adjustPercentage(index: number, newPercentage: number) {
@@ -685,6 +712,40 @@ export default function ResultsPage() {
             >
               📋 Copy Text — Salin Teks
             </button>
+          </div>
+
+          {/* Save to Account */}
+          <div className="mt-4">
+            {user ? (
+              <button
+                type="button"
+                onClick={saveToAccount}
+                disabled={saving || saved}
+                className={`w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold transition-all ${
+                  saved
+                    ? "bg-emerald-500/10 text-emerald-400 border-2 border-emerald-500/30"
+                    : "bg-slate-900 text-slate-300 border-2 border-slate-700 hover:border-blue-500/50 hover:text-blue-400"
+                }`}
+              >
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                    Saving...
+                  </>
+                ) : saved ? (
+                  <>✓ Saved to Account — Tersimpan</>
+                ) : (
+                  <>💾 Save to Account — Simpan ke Akun</>
+                )}
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="w-full flex items-center justify-center gap-2 bg-slate-900 text-slate-400 border-2 border-slate-700 px-6 py-3.5 rounded-xl font-semibold hover:border-blue-500/50 hover:text-blue-400 transition-all"
+              >
+                🔑 Sign in to Save — Masuk untuk Simpan
+              </Link>
+            )}
           </div>
 
           {/* Financial Analytics — Dark Fintech Style */}
