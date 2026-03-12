@@ -69,283 +69,196 @@ function PieChart({ categories }: { categories: CalculatorResult["categories"] }
 }
 
 // Generate and download PDF
+
 function downloadPDF(result: CalculatorResult, categories: CalculatorResult["categories"]) {
   const modeLabel = result.mode === "monthly" ? "Monthly" : "Annual";
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const siteUrl = "https://salarysplit-rho.vercel.app";
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(siteUrl)}&bgcolor=0f172a&color=60a5fa`;
 
-  // Build SVG-based PDF content as an HTML page for printing
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>SalarySplit - ${modeLabel} Budget Report</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; padding: 40px; max-width: 800px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
-        .logo { font-size: 28px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
-        .logo span { color: #2563eb; }
-        .subtitle { font-size: 14px; color: #64748b; }
-        .date { font-size: 12px; color: #94a3b8; margin-top: 8px; }
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
-        .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
-        .summary-box h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 12px; }
-        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-        .summary-row:last-child { border-bottom: none; }
-        .summary-label { font-size: 13px; color: #64748b; }
-        .summary-value { font-size: 13px; font-weight: 600; color: #1e293b; }
-        .highlight-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 32px; }
-        .highlight-label { font-size: 12px; color: #2563eb; font-weight: 600; }
-        .highlight-amount { font-size: 24px; font-weight: 800; color: #1d4ed8; margin: 4px 0; }
-        .highlight-sub { font-size: 12px; color: #3b82f6; }
-        .breakdown { margin-bottom: 32px; }
-        .breakdown h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-        .category-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .category-row:last-child { border-bottom: none; }
-        .cat-color { width: 12px; height: 12px; border-radius: 4px; margin-right: 12px; flex-shrink: 0; }
-        .cat-name { flex: 1; font-size: 14px; font-weight: 500; }
-        .cat-amount { font-size: 14px; font-weight: 700; margin-right: 16px; min-width: 140px; text-align: right; }
-        .cat-pct { font-size: 13px; color: #64748b; min-width: 40px; text-align: right; }
-        .total-row { display: flex; justify-content: space-between; padding: 16px 0; border-top: 2px solid #1e293b; margin-top: 8px; font-weight: 700; font-size: 15px; }
-        .footer { text-align: center; padding-top: 24px; border-top: 1px solid #e2e8f0; margin-top: 32px; }
-        .footer p { font-size: 11px; color: #94a3b8; }
-        @media print { body { padding: 20px; } }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo">Salary<span>Split</span></div>
-        <div class="subtitle">${modeLabel} Budget Allocation Report</div>
-        <div class="date">Generated on ${dateStr}</div>
+  const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>SalarySplit - ${modeLabel} Budget Report</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #e2e8f0; background: #0f172a; padding: 40px; max-width: 800px; margin: 0 auto; }
+      .header { text-align: center; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #1e293b; }
+      .logo { font-size: 26px; font-weight: 800; color: #fff; } .logo span { color: #60a5fa; }
+      .subtitle { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+      .date { font-size: 11px; color: #64748b; margin-top: 6px; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+      .box { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px; }
+      .box h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 10px; }
+      .row { display: flex; justify-content: space-between; padding: 5px 0; } .row:not(:last-child) { border-bottom: 1px solid #1e293b44; }
+      .lbl { font-size: 12px; color: #94a3b8; } .val { font-size: 12px; font-weight: 600; color: #e2e8f0; }
+      .hl { background: #0d3320; border: 1px solid #166534; border-radius: 10px; padding: 16px; text-align: center; margin-bottom: 20px; }
+      .hl-lbl { font-size: 11px; color: #6ee7b7; font-weight: 600; } .hl-amt { font-size: 22px; font-weight: 800; color: #34d399; margin: 2px 0; } .hl-sub { font-size: 11px; color: #6ee7b7; }
+      .brk h2 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+      .cat { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #1e293b; } .cat:last-child { border-bottom: none; }
+      .dot { width: 8px; height: 8px; border-radius: 2px; margin-right: 10px; }
+      .cname { flex: 1; font-size: 12px; color: #cbd5e1; } .camt { font-size: 12px; font-weight: 700; color: #e2e8f0; margin-right: 14px; min-width: 110px; text-align: right; } .cpct { font-size: 11px; color: #64748b; min-width: 36px; text-align: right; }
+      .totrow { display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid #475569; margin-top: 4px; font-weight: 700; font-size: 13px; color: #fff; }
+      .ded { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px; margin-bottom: 20px; }
+      .ded-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #f87171; margin-bottom: 8px; }
+      .ded-total { display: flex; justify-content: space-between; padding-top: 6px; border-top: 1px solid #475569; font-weight: 700; font-size: 12px; color: #f87171; }
+      .ft { text-align: center; padding-top: 20px; border-top: 1px solid #1e293b; margin-top: 20px; }
+      .ft p { font-size: 10px; color: #64748b; } .ft a { color: #60a5fa; text-decoration: none; font-weight: 600; }
+      .qr { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
+      .qr-txt { font-size: 11px; color: #94a3b8; text-align: left; line-height: 1.5; } .qr-txt strong { color: #60a5fa; }
+      @media print { body { padding: 20px; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="header"><div class="logo">Salary<span>Split</span></div><div class="subtitle">${modeLabel} Budget Allocation Report</div><div class="date">${dateStr}</div></div>
+    <div class="grid2">
+      <div class="box"><h3>Income</h3>
+        <div class="row"><span class="lbl">Base Salary</span><span class="val">${formatRupiah(result.input.monthlyIncome)}</span></div>
+        ${result.input.annualBonus > 0 ? `<div class="row"><span class="lbl">Annual Bonus</span><span class="val">${formatRupiah(result.input.annualBonus)}</span></div>` : ''}
+        ${result.input.monthlyAllowances > 0 ? `<div class="row"><span class="lbl">Allowances</span><span class="val">${formatRupiah(result.input.monthlyAllowances)}</span></div>` : ''}
+        <div class="row"><span class="lbl">Take-Home</span><span class="val" style="color:#34d399;">${formatRupiah(result.totalIncome)}</span></div>
       </div>
-
-      <div class="summary-grid">
-        <div class="summary-box">
-          <h3>Income Details</h3>
-          <div class="summary-row">
-            <span class="summary-label">Monthly Salary</span>
-            <span class="summary-value">${formatRupiah(result.input.monthlyIncome)}</span>
-          </div>
-          ${result.input.annualBonus > 0 ? `
-          <div class="summary-row">
-            <span class="summary-label">Annual Bonus</span>
-            <span class="summary-value">${formatRupiah(result.input.annualBonus)}</span>
-          </div>` : ''}
-          ${result.input.monthlyAllowances > 0 ? `
-          <div class="summary-row">
-            <span class="summary-label">Monthly Allowances</span>
-            <span class="summary-value">${formatRupiah(result.input.monthlyAllowances)}</span>
-          </div>` : ''}
-          <div class="summary-row">
-            <span class="summary-label">Total ${modeLabel} Income</span>
-            <span class="summary-value" style="color: #2563eb;">${formatRupiah(result.totalIncome)}</span>
-          </div>
-        </div>
-        <div class="summary-box">
-          <h3>Your Profile</h3>
-          <div class="summary-row">
-            <span class="summary-label">Status</span>
-            <span class="summary-value">${result.input.maritalStatus.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Housing</span>
-            <span class="summary-value">${result.input.housingType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Tax</span>
-            <span class="summary-value">${result.input.taxCovered ? 'Company-paid' : 'Self-paid'}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Medical</span>
-            <span class="summary-value">${result.input.medicalCovered ? 'Company-covered' : 'Self-paid'}</span>
-          </div>
-        </div>
+      <div class="box"><h3>Profile</h3>
+        <div class="row"><span class="lbl">Status</span><span class="val">${result.input.maritalStatus.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase())}</span></div>
+        <div class="row"><span class="lbl">Housing</span><span class="val">${result.input.housingType.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase())}</span></div>
+        <div class="row"><span class="lbl">Tax</span><span class="val">${result.input.taxCovered?'Company':'Self'}</span></div>
+        <div class="row"><span class="lbl">BPJS</span><span class="val">${result.input.hasBpjsKesehatan?'Active':'Off'}</span></div>
       </div>
+    </div>
+    ${result.payroll && result.payroll.totalEmployeeDeductions > 0 ? `<div class="ded"><div class="ded-title">Deductions</div>
+      ${result.input.hasBpjsKesehatan && result.payroll.bpjsKesehatanEmployee > 0 ? `<div class="row"><span class="lbl">BPJS Kesehatan</span><span class="val">${formatRupiah(result.payroll.bpjsKesehatanEmployee)}</span></div>` : ''}
+      ${result.payroll.jhtEmployee > 0 ? `<div class="row"><span class="lbl">JHT</span><span class="val">${formatRupiah(result.payroll.jhtEmployee)}</span></div>` : ''}
+      ${result.payroll.jpEmployee > 0 ? `<div class="row"><span class="lbl">JP</span><span class="val">${formatRupiah(result.payroll.jpEmployee)}</span></div>` : ''}
+      ${result.payroll.pph21Amount > 0 ? `<div class="row"><span class="lbl">PPh 21</span><span class="val">${formatRupiah(result.payroll.pph21Amount)}</span></div>` : ''}
+      <div class="ded-total"><span>Total</span><span>-${formatRupiah(result.payroll.totalEmployeeDeductions)}</span></div>
+    </div>` : ''}
+    <div class="brk"><h2>Budget Breakdown</h2>
+      ${categories.map(c=>`<div class="cat"><div class="dot" style="background:${c.color};"></div><div class="cname">${c.emoji} ${c.name}</div><div class="camt">${formatRupiah(c.amount)}</div><div class="cpct">${c.percentage}%</div></div>`).join('')}
+      <div class="totrow"><span>Total</span><span>${formatRupiah(result.totalIncome)}</span></div>
+    </div>
+    <div class="ft"><p>Generated by <strong>SalarySplit</strong></p>
+      <div class="qr"><img src="${qrUrl}" width="72" height="72" style="border-radius:6px;"/><div class="qr-txt"><strong>Try it yourself!</strong><br/>Scan or visit<br/><a href="${siteUrl}">${siteUrl.replace('https://','')}</a></div></div>
+    </div></body></html>`;
 
-      <div class="highlight-box">
-        <div class="highlight-label">Savings + Investments + Emergency Fund</div>
-        <div class="highlight-amount">${formatRupiah(
-          categories
-            .filter(c => ["Savings", "Investments", "Emergency Fund"].includes(c.name))
-            .reduce((sum, c) => sum + c.amount, 0)
-        )}</div>
-        <div class="highlight-sub">${
-          categories
-            .filter(c => ["Savings", "Investments", "Emergency Fund"].includes(c.name))
-            .reduce((sum, c) => sum + c.percentage, 0)
-        }% of your income goes to building wealth</div>
-      </div>
-
-      <div class="breakdown">
-        <h2>Budget Breakdown</h2>
-        ${categories.map(cat => `
-          <div class="category-row">
-            <div class="cat-color" style="background-color: ${cat.color};"></div>
-            <div class="cat-name">${cat.emoji} ${cat.name}</div>
-            <div class="cat-amount">${formatRupiah(cat.amount)}</div>
-            <div class="cat-pct">${cat.percentage}%</div>
-          </div>
-        `).join('')}
-        <div class="total-row">
-          <span>Total</span>
-          <span>${formatRupiah(result.totalIncome)} — 100%</span>
-        </div>
-      </div>
-
-      <div class="footer">
-        <p>Generated by SalarySplit — Smart Salary Allocation Calculator</p>
-        <p style="margin-top: 4px;">salarysplit.vercel.app</p>
-      </div>
-    </body>
-    </html>
-  `;
-
-  // Open in new window and trigger print (which allows saving as PDF)
   const printWindow = window.open('', '_blank');
   if (printWindow) {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
-    // Small delay to let styles load
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+    setTimeout(() => { printWindow.print(); }, 600);
   }
 }
 
-// Generate and download JPG image of results
+// Generate and download JPG image of results — dark theme with QR
 async function downloadImage(result: CalculatorResult, categories: CalculatorResult["categories"]) {
   const modeLabel = result.mode === "monthly" ? "Monthly" : "Annual";
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const siteUrl = "salarysplit-rho.vercel.app";
 
-  const wealthCats = categories.filter(c => ["Savings", "Investments", "Emergency Fund"].includes(c.name));
-  const wealthAmount = wealthCats.reduce((sum, c) => sum + c.amount, 0);
-  const wealthPct = wealthCats.reduce((sum, c) => sum + c.percentage, 0);
-
-  // Create an offscreen canvas
   const canvas = document.createElement("canvas");
-  const scale = 2; // retina
+  const scale = 2;
   const W = 800 * scale;
-  const H = (520 + categories.length * 44) * scale;
+  const H = (560 + categories.length * 44) * scale;
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
   ctx.scale(scale, scale);
   const w = 800;
+  const font = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
-  // Background
-  ctx.fillStyle = "#f8fafc";
+  // Dark background
+  ctx.fillStyle = "#0f172a";
   ctx.fillRect(0, 0, w, H / scale);
 
-  // White card area
+  // Card
   const cardY = 16;
   const cardH = H / scale - 32;
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#1e293b";
   ctx.beginPath();
   ctx.roundRect(24, cardY, w - 48, cardH, 16);
   ctx.fill();
-  ctx.strokeStyle = "#e2e8f0";
+  ctx.strokeStyle = "#334155";
   ctx.lineWidth = 1;
   ctx.stroke();
 
   // Header
-  ctx.fillStyle = "#1e293b";
-  ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 24px ${font}`;
   ctx.textAlign = "center";
-  ctx.fillText("SalarySplit", w / 2, 60);
-  
-  ctx.fillStyle = "#64748b";
-  ctx.font = "14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-  ctx.fillText(`${modeLabel} Budget Allocation — ${dateStr}`, w / 2, 82);
+  ctx.fillText("SalarySplit", w / 2, 58);
 
-  // Total Income
-  ctx.fillStyle = "#2563eb";
-  ctx.font = "bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-  ctx.fillText(`Total Income: ${formatRupiah(result.totalIncome)}`, w / 2, 116);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `13px ${font}`;
+  ctx.fillText(`${modeLabel} Budget Allocation — ${dateStr}`, w / 2, 78);
+
+  // Take-home income
+  ctx.fillStyle = "#34d399";
+  ctx.font = `bold 20px ${font}`;
+  ctx.fillText(`Take-Home: ${formatRupiah(result.totalIncome)}`, w / 2, 112);
 
   // Divider
-  ctx.strokeStyle = "#e2e8f0";
+  ctx.strokeStyle = "#334155";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(56, 132);
-  ctx.lineTo(w - 56, 132);
+  ctx.moveTo(56, 128);
+  ctx.lineTo(w - 56, 128);
   ctx.stroke();
 
   // Category rows
-  let y = 164;
+  let y = 158;
   ctx.textAlign = "left";
   categories.forEach(cat => {
-    // Color dot
     ctx.fillStyle = cat.color;
     ctx.beginPath();
-    ctx.arc(72, y, 6, 0, Math.PI * 2);
+    ctx.arc(72, y, 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Emoji + Name
-    ctx.fillStyle = "#1e293b";
-    ctx.font = "15px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillText(`${cat.emoji}  ${cat.name}`, 92, y + 5);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = `14px ${font}`;
+    ctx.fillText(`${cat.emoji}  ${cat.name}`, 92, y + 4);
 
-    // Amount
-    ctx.fillStyle = "#1e293b";
-    ctx.font = "bold 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = `bold 14px ${font}`;
     ctx.textAlign = "right";
-    ctx.fillText(formatRupiah(cat.amount), w - 140, y + 5);
+    ctx.fillText(formatRupiah(cat.amount), w - 140, y + 4);
 
-    // Percentage
     ctx.fillStyle = "#64748b";
-    ctx.font = "14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillText(`${cat.percentage}%`, w - 60, y + 5);
+    ctx.font = `13px ${font}`;
+    ctx.fillText(`${cat.percentage}%`, w - 60, y + 4);
 
-    // Progress bar background
-    ctx.fillStyle = "#f1f5f9";
+    // Progress bar bg
+    ctx.fillStyle = "#0f172a";
     ctx.beginPath();
-    ctx.roundRect(92, y + 14, 400, 6, 3);
+    ctx.roundRect(92, y + 14, 400, 5, 3);
     ctx.fill();
 
     // Progress bar fill
     ctx.fillStyle = cat.color;
     ctx.beginPath();
-    ctx.roundRect(92, y + 14, Math.max(4, 400 * cat.percentage / 100), 6, 3);
+    ctx.roundRect(92, y + 14, Math.max(3, 400 * cat.percentage / 100), 5, 3);
     ctx.fill();
 
     ctx.textAlign = "left";
     y += 44;
   });
 
-  // Divider before wealth summary
+  // Divider
   y += 8;
-  ctx.strokeStyle = "#e2e8f0";
+  ctx.strokeStyle = "#334155";
   ctx.beginPath();
   ctx.moveTo(56, y);
   ctx.lineTo(w - 56, y);
   ctx.stroke();
-  y += 24;
+  y += 20;
 
-  // Wealth summary box
-  ctx.fillStyle = "#eff6ff";
-  ctx.beginPath();
-  ctx.roundRect(56, y, w - 112, 64, 12);
-  ctx.fill();
-  ctx.strokeStyle = "#bfdbfe";
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  ctx.fillStyle = "#1d4ed8";
-  ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  // Footer with URL
+  ctx.fillStyle = "#64748b";
+  ctx.font = `11px ${font}`;
   ctx.textAlign = "center";
-  ctx.fillText(`Savings + Investments + Emergency: ${formatRupiah(wealthAmount)} (${wealthPct}%)`, w / 2, y + 38);
+  ctx.fillText("Generated by SalarySplit", w / 2, y);
+  y += 18;
+  ctx.fillStyle = "#60a5fa";
+  ctx.font = `bold 13px ${font}`;
+  ctx.fillText(`Try it yourself → ${siteUrl}`, w / 2, y);
 
-  // Footer
-  y += 88;
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "11px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Generated by SalarySplit — salarysplit.vercel.app", w / 2, y);
-
-  // Download as JPG
+  // Download
   canvas.toBlob((blob) => {
     if (blob) {
       const url = URL.createObjectURL(blob);
@@ -357,6 +270,7 @@ async function downloadImage(result: CalculatorResult, categories: CalculatorRes
     }
   }, "image/jpeg", 0.95);
 }
+
 
 export default function ResultsPage() {
   const router = useRouter();
@@ -463,7 +377,7 @@ export default function ResultsPage() {
               Base salary:{" "}
               <span className="font-bold text-white">{formatRupiah(result.grossIncome)}</span>
               {" → "}Take-home:{" "}
-              <span className="font-bold text-green-600">{formatRupiah(result.baseTakeHome)}</span>
+              <span className="font-bold text-emerald-400">{formatRupiah(result.baseTakeHome)}</span>
               {result.extraIncome > 0 && (
                 <>
                   {" + "}
@@ -494,7 +408,8 @@ export default function ResultsPage() {
                 </div>
               </div>
 
-              {/* EMPLOYEE DEDUCTIONS */}
+              {/* EMPLOYEE DEDUCTIONS — only show if there are deductions */}
+              {result.payroll.totalEmployeeDeductions > 0 && (
               <div className="mb-5">
                 <div className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">
                   Employee Deductions — Potongan Karyawan
@@ -503,43 +418,50 @@ export default function ResultsPage() {
                   {result.input.hasBpjsKesehatan && (
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-500">BPJS Kesehatan (1%)</span>
-                      <span className="font-semibold text-slate-700">
+                      <span className="font-semibold text-slate-200">
                         {formatRupiah(result.payroll.bpjsKesehatanEmployee)}
                         {result.payroll.bpjsKesehatanCoveredByCompany && (
-                          <span className="text-xs text-green-600 ml-1">✓ Company</span>
+                          <span className="text-xs text-emerald-400 ml-1">✓ Company</span>
                         )}
                       </span>
                     </div>
                   )}
-                  {result.input.hasBpjsKetenagakerjaan && (
+                  {result.input.hasBpjsKetenagakerjaan && (result.payroll.jhtEmployee > 0 || result.payroll.jpEmployee > 0) && (
                     <>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">JHT — Jaminan Hari Tua (2%)</span>
-                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jhtEmployee)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">JP — Jaminan Pensiun (1%)</span>
-                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jpEmployee)}</span>
-                      </div>
+                      {result.payroll.jhtEmployee > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-400">JHT — Jaminan Hari Tua (2%)</span>
+                          <span className="font-semibold text-slate-200">{formatRupiah(result.payroll.jhtEmployee)}</span>
+                        </div>
+                      )}
+                      {result.payroll.jpEmployee > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-400">JP — Jaminan Pensiun (1%)</span>
+                          <span className="font-semibold text-slate-200">{formatRupiah(result.payroll.jpEmployee)}</span>
+                        </div>
+                      )}
                     </>
                   )}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">
-                      PPh 21 ({result.payroll.pph21Method === "TER" ? `TER ${(result.payroll.terRate * 100).toFixed(2)}%` : "Pasal 17"}, Cat {result.payroll.terCategory})
-                    </span>
-                    <span className="font-semibold text-slate-700">
-                      {formatRupiah(result.payroll.pph21Amount)}
-                      {result.payroll.pph21CoveredByCompany && (
-                        <span className="text-xs text-green-600 ml-1">✓ Company</span>
-                      )}
-                    </span>
-                  </div>
+                  {result.payroll.pph21Amount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-400">
+                        PPh 21 ({result.payroll.pph21Method === "TER" ? `TER ${(result.payroll.terRate * 100).toFixed(2)}%` : "Pasal 17"}, Cat {result.payroll.terCategory})
+                      </span>
+                      <span className="font-semibold text-slate-200">
+                        {formatRupiah(result.payroll.pph21Amount)}
+                        {result.payroll.pph21CoveredByCompany && (
+                          <span className="text-xs text-emerald-400 ml-1">✓ Company</span>
+                        )}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm pt-2 border-t border-slate-800 font-bold">
                     <span className="text-red-500">Total Deductions</span>
                     <span className="text-red-500">-{formatRupiah(result.payroll.totalEmployeeDeductions)}</span>
                   </div>
                 </div>
               </div>
+              )}
 
               {/* RESULT: Take-Home Pay */}
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-5">
@@ -559,26 +481,26 @@ export default function ResultsPage() {
                   {result.input.hasBpjsKesehatan && (
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-500">BPJS Kesehatan employer (4%)</span>
-                      <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.bpjsKesehatanEmployer)}</span>
+                      <span className="font-semibold text-slate-200">{formatRupiah(result.payroll.bpjsKesehatanEmployer)}</span>
                     </div>
                   )}
                   {result.input.hasBpjsKetenagakerjaan && (
                     <>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-500">JHT employer (3.7%)</span>
-                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jhtEmployer)}</span>
+                        <span className="font-semibold text-slate-200">{formatRupiah(result.payroll.jhtEmployer)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-500">JP employer (2%)</span>
-                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jpEmployer)}</span>
+                        <span className="font-semibold text-slate-200">{formatRupiah(result.payroll.jpEmployer)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-500">JKK — Kecelakaan Kerja</span>
-                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jkkEmployer)}</span>
+                        <span className="font-semibold text-slate-200">{formatRupiah(result.payroll.jkkEmployer)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-500">JKM — Kematian (0.3%)</span>
-                        <span className="font-semibold text-slate-700">{formatRupiah(result.payroll.jkmEmployer)}</span>
+                        <span className="font-semibold text-slate-200">{formatRupiah(result.payroll.jkmEmployer)}</span>
                       </div>
                     </>
                   )}
@@ -710,7 +632,7 @@ export default function ResultsPage() {
               <span
                 className={`text-sm font-bold ${
                   adjustedCategories.reduce((s, c) => s + c.percentage, 0) === 100
-                    ? "text-green-600"
+                    ? "text-emerald-400"
                     : "text-red-500"
                 }`}
               >

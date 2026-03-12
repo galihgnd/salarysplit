@@ -31,6 +31,7 @@ export interface CalculatorInput {
   taxStatus: TaxStatus;
   hasBpjsKesehatan: boolean;
   hasBpjsKetenagakerjaan: boolean;
+  pph21Enabled: boolean;
   jkkRiskRate: number;
   budgetRule: BudgetRule;
   // Debt

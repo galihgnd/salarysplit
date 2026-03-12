@@ -30,6 +30,7 @@ export default function CalculatorPage() {
   const [taxStatus, setTaxStatus] = useState<TaxStatus>("TK/0");
   const [hasBpjsKesehatan, setHasBpjsKesehatan] = useState<boolean>(true);
   const [hasBpjsKetenagakerjaan, setHasBpjsKetenagakerjaan] = useState<boolean>(true);
+  const [pph21Enabled, setPph21Enabled] = useState<boolean>(true);
   const [jkkRiskRate, setJkkRiskRate] = useState<number>(0.0054);
   const [budgetRule, setBudgetRule] = useState<BudgetRule>("50_30_20");
   const [debtMode, setDebtMode] = useState<DebtMode>("simple");
@@ -81,6 +82,7 @@ export default function CalculatorPage() {
       taxStatus,
       hasBpjsKesehatan,
       hasBpjsKetenagakerjaan,
+      pph21Enabled,
       jkkRiskRate,
       budgetRule,
       debtMode,
@@ -373,31 +375,69 @@ export default function CalculatorPage() {
                 </div>
               </div>
 
-              {/* PPh 21 Toggle */}
+              {/* PPh 21 Calculation Toggle */}
               <div
-                onClick={() => setTaxCovered(!taxCovered)}
+                onClick={() => {
+                  setPph21Enabled(!pph21Enabled);
+                  if (pph21Enabled) setTaxCovered(false);
+                }}
                 className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  taxCovered
+                  pph21Enabled
                     ? "border-blue-500 bg-blue-500/10"
                     : "border-slate-700 hover:border-slate-600"
                 }`}
               >
                 <div>
                   <div className="text-sm font-semibold text-slate-300">
-                    PPh 21 Paid by Company
+                    PPh 21 Calculation
                   </div>
                   <div className="text-xs text-slate-500">
-                    Pajak penghasilan ditanggung perusahaan (gross-up)
+                    Perhitungan pajak penghasilan pasal 21
                   </div>
                 </div>
                 <div
                   className={`w-12 h-7 rounded-full flex items-center transition-all ${
-                    taxCovered ? "bg-blue-500 justify-end" : "bg-slate-700 justify-start"
+                    pph21Enabled ? "bg-blue-500 justify-end" : "bg-slate-700 justify-start"
                   }`}
                 >
                   <div className="w-5 h-5 bg-slate-300 rounded-full shadow-sm mx-1"></div>
                 </div>
               </div>
+              {!pph21Enabled && (
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 -mt-2">
+                  <p className="text-xs text-amber-400">
+                    ⚠️ PPh 21 is mandatory for all employees in Indonesia. Turn off only if you handle your own tax filing (freelancer / business owner).
+                  </p>
+                </div>
+              )}
+
+              {/* PPh 21 Paid by Company — only show if PPh 21 is enabled */}
+              {pph21Enabled && (
+                <div
+                  onClick={() => setTaxCovered(!taxCovered)}
+                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    taxCovered
+                      ? "border-blue-500 bg-blue-500/10"
+                      : "border-slate-700 hover:border-slate-600"
+                  }`}
+                >
+                  <div>
+                    <div className="text-sm font-semibold text-slate-300">
+                      PPh 21 Paid by Company
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Pajak penghasilan ditanggung perusahaan (gross-up)
+                    </div>
+                  </div>
+                  <div
+                    className={`w-12 h-7 rounded-full flex items-center transition-all ${
+                      taxCovered ? "bg-blue-500 justify-end" : "bg-slate-700 justify-start"
+                    }`}
+                  >
+                    <div className="w-5 h-5 bg-slate-300 rounded-full shadow-sm mx-1"></div>
+                  </div>
+                </div>
+              )}
 
               {/* BPJS Employee Share Toggle — only show if BPJS is active */}
               {hasBpjsKesehatan && (
@@ -583,7 +623,7 @@ export default function CalculatorPage() {
                           updated[idx] = { ...updated[idx], label: e.target.value };
                           setDebtItems(updated);
                         }}
-                        className="w-1/3 px-3 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-1/3 px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Label"
                       />
                       <div className="relative flex-1">
@@ -599,7 +639,7 @@ export default function CalculatorPage() {
                             setDebtItems(updated);
                           }}
                           placeholder="0"
-                          className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                       {debtItems.length > 1 && (

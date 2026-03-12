@@ -184,6 +184,7 @@ export function calculateAllocation(input: CalculatorInput): CalculatorResult {
     hasBpjsKesehatan: input.hasBpjsKesehatan,
     hasBpjsKetenagakerjaan: input.hasBpjsKetenagakerjaan,
     bpjsEmployeeShareCoveredByCompany: input.medicalCovered,
+    pph21Enabled: input.pph21Enabled,
     pph21CoveredByCompany: input.taxCovered,
     jkkRiskRate: input.jkkRiskRate,
     isFinalPayrollMonth: false,

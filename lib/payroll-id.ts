@@ -33,6 +33,7 @@ export interface PayrollInput {
   hasBpjsKesehatan: boolean;
   hasBpjsKetenagakerjaan: boolean;
   bpjsEmployeeShareCoveredByCompany: boolean;
+  pph21Enabled: boolean;
   pph21CoveredByCompany: boolean;
   jkkRiskRate: number;
   isFinalPayrollMonth: boolean;
@@ -216,21 +217,23 @@ export function calculatePayroll(input: PayrollInput): PayrollResult {
     jkmER = calculateJKM(monthlyGrossSalary).employer;
   }
 
-  // PPh 21
+  // PPh 21 — only calculate if enabled
   const terCategory = TER_CATEGORY_MAP[taxStatus] as TerCategory;
   let pph21Amount = 0, terRate = 0;
   let pph21Method: "TER" | "annual_reconciliation" = "TER";
 
-  if (!isFinalPayrollMonth) {
-    terRate = getTerRate(monthlyGrossSalary, terCategory);
-    pph21Amount = Math.round(monthlyGrossSalary * terRate);
-  } else {
-    const annualGross = monthlyGrossSalary * 12;
-    const annualPph21 = calculateAnnualPph21(annualGross, taxStatus);
-    const monthlyTerRate = getTerRate(monthlyGrossSalary, terCategory);
-    const terAlreadyPaid = Math.round(monthlyGrossSalary * monthlyTerRate) * 11;
-    pph21Amount = Math.max(0, annualPph21 - terAlreadyPaid);
-    pph21Method = "annual_reconciliation";
+  if (input.pph21Enabled) {
+    if (!isFinalPayrollMonth) {
+      terRate = getTerRate(monthlyGrossSalary, terCategory);
+      pph21Amount = Math.round(monthlyGrossSalary * terRate);
+    } else {
+      const annualGross = monthlyGrossSalary * 12;
+      const annualPph21 = calculateAnnualPph21(annualGross, taxStatus);
+      const monthlyTerRate = getTerRate(monthlyGrossSalary, terCategory);
+      const terAlreadyPaid = Math.round(monthlyGrossSalary * monthlyTerRate) * 11;
+      pph21Amount = Math.max(0, annualPph21 - terAlreadyPaid);
+      pph21Method = "annual_reconciliation";
+    }
   }
 
   // Employee deductions
