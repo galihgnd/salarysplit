@@ -323,6 +323,11 @@ export default function ResultsPage() {
   }
 
   // Handle percentage adjustment
+  // Get the budget base for recalculations (same as what was used to build categories)
+  const budgetBase = result
+    ? (result.availableAfterDebt > 0 ? result.availableAfterDebt : result.totalIncome)
+    : 0;
+
   function adjustPercentage(index: number, newPercentage: number) {
     if (newPercentage < 0 || newPercentage > 100) return;
 
@@ -333,7 +338,7 @@ export default function ResultsPage() {
     updated[index] = {
       ...updated[index],
       percentage: newPercentage,
-      amount: Math.round((result!.totalIncome * newPercentage) / 100),
+      amount: Math.round((budgetBase * newPercentage) / 100),
     };
 
     // Distribute the difference to "Other" or last category
@@ -344,7 +349,7 @@ export default function ResultsPage() {
         updated[otherIndex] = {
           ...updated[otherIndex],
           percentage: newOtherPct,
-          amount: Math.round((result!.totalIncome * newOtherPct) / 100),
+          amount: Math.round((budgetBase * newOtherPct) / 100),
         };
       }
     }
@@ -597,20 +602,20 @@ export default function ResultsPage() {
 
           {/* Detailed Breakdown */}
           <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-1">
               <h3 className="text-lg font-bold text-white">
                 Detailed Breakdown — Rincian Alokasi
               </h3>
-              <span className="text-xs text-slate-400">Adjust percentages below</span>
+              <span className="text-xs text-slate-500 shrink-0">Adjust percentages below</span>
             </div>
 
             <div className="space-y-4">
               {adjustedCategories.map((cat, index) => (
                 <div key={cat.name} className="group">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     {/* Color + Emoji */}
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-base sm:text-lg shrink-0"
                       style={{ backgroundColor: cat.color + "15" }}
                     >
                       {cat.emoji}
@@ -644,9 +649,9 @@ export default function ResultsPage() {
                         max="100"
                         value={cat.percentage}
                         onChange={(e) => adjustPercentage(index, parseInt(e.target.value) || 0)}
-                        className="w-14 text-center text-sm font-bold text-slate-700 border border-slate-200 rounded-lg py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-12 sm:w-14 text-center text-sm font-bold text-white bg-slate-800 border border-slate-700 rounded-lg py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                      <span className="text-sm text-slate-400">%</span>
+                      <span className="text-sm text-slate-500">%</span>
                     </div>
                   </div>
                 </div>

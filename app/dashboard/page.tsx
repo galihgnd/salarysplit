@@ -91,21 +91,21 @@ export default function DashboardPage() {
               Salary<span className="text-blue-400">Split</span>
             </span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link
               href="/calculator"
-              className="text-sm text-slate-400 hover:text-blue-400 transition-colors"
+              className="text-xs sm:text-sm text-slate-400 hover:text-blue-400 transition-colors"
             >
               Calculator
             </Link>
             <button
               onClick={signOut}
-              className="text-sm text-slate-500 hover:text-red-400 transition-colors"
+              className="text-xs sm:text-sm text-slate-500 hover:text-red-400 transition-colors"
             >
               Sign Out
             </button>
             {avatarUrl && (
-              <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full border-2 border-slate-700" />
+              <img src={avatarUrl} alt="" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-700" />
             )}
           </div>
         </div>
@@ -192,10 +192,10 @@ export default function DashboardPage() {
                             {p.health_score}/100
                           </span>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                           <span>Gross: {formatRupiah(p.monthly_income)}</span>
                           <span>Take-home: {formatRupiah(p.take_home_pay)}</span>
-                          <span>{p.budget_rule.replace("_", "/")}</span>
+                          <span>{p.budget_rule.replaceAll("_", "/")}</span>
                           <span>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                         </div>
                       </div>
