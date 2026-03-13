@@ -719,6 +719,23 @@ export default function ResultsPage() {
             </button>
           </div>
 
+          {/* Compare CTA */}
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => {
+                sessionStorage.setItem(
+                  "compareScenarioA",
+                  JSON.stringify(result.input)
+                );
+                window.location.href = "/compare";
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-transparent text-purple-400 border-2 border-purple-500/40 px-6 py-3 rounded-xl font-semibold hover:bg-purple-500/10 hover:border-purple-500/60 transition-all"
+            >
+              ⚡ Compare with Another Scenario — Bandingkan
+            </button>
+          </div>
+
           {/* Save to Account */}
           <div className="mt-4">
             {user ? (

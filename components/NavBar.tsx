@@ -19,8 +19,8 @@ export default function NavBar() {
           </span>
         </Link>
         <div className="flex items-center gap-4">
-          <a href="#features" className="hidden sm:block text-sm text-slate-400 hover:text-blue-400 transition-colors">
-            Features
+          <a href="#tools" className="hidden sm:block text-sm text-slate-400 hover:text-blue-400 transition-colors">
+            Tools
           </a>
           <a href="#how-it-works" className="hidden sm:block text-sm text-slate-400 hover:text-blue-400 transition-colors">
             How It Works
@@ -32,6 +32,18 @@ export default function NavBar() {
                 className="text-sm text-slate-400 hover:text-blue-400 transition-colors"
               >
                 Dashboard
+              </Link>
+              <Link
+                href="/compare"
+                className="text-sm text-slate-400 hover:text-purple-400 transition-colors"
+              >
+                Compare
+              </Link>
+              <Link
+                href="/trip-planner"
+                className="text-sm text-slate-400 hover:text-emerald-400 transition-colors"
+              >
+                Trip Planner
               </Link>
               <Link
                 href="/calculator"
@@ -47,6 +59,18 @@ export default function NavBar() {
             </div>
           ) : (
             <div className="flex items-center gap-3">
+              <Link
+                href="/compare"
+                className="hidden sm:block text-sm text-slate-400 hover:text-purple-400 transition-colors"
+              >
+                Compare
+              </Link>
+              <Link
+                href="/trip-planner"
+                className="hidden sm:block text-sm text-slate-400 hover:text-emerald-400 transition-colors"
+              >
+                Trip Planner
+              </Link>
               <Link
                 href="/login"
                 className="text-sm text-slate-400 hover:text-blue-400 transition-colors"
